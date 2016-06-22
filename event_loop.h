@@ -32,9 +32,10 @@ public:
     for(auto &aefile_event : events){
         aefile_event.mask = AE_NONE;
     }
-  }
+    }
   void ae_main();
   void process_events(aeFileEvent &event);
+  virtual int create_event_instance();
   virtual int wait_for_event();
   int maxfd;
   int set_size;

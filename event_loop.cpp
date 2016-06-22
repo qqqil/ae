@@ -5,7 +5,6 @@
 
 void EventLoop::process_events(aeFileEvent &event){
   logger.info("process event..");
-  logger.info("waiting for evnets");
   int evt_num = wait_for_event();
   if(evt_num == -1){
     logger.error("errors for waiting events");
@@ -26,7 +25,12 @@ void EventLoop::ae_main(){
     }
 }
 
-int EventLoop::wait_for_event(){
 
+int EventLoop::wait_for_event(){
+  
   return 0;
+}
+
+int EventLoop::create_event_instance(){
+
 }
