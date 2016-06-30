@@ -25,6 +25,7 @@ public:
   int mask;
   file_callback *r_callback;
   file_callback *w_callback;
+
   void *client_data;
 };
 /* A fired event */
@@ -58,6 +59,8 @@ public:
   int set_size;
   long long time_event_next_id;
   time_t last_time;
+  std::vector<int,aeFileEvent> events;
+
   int stop;
   void *client_data;
 private:

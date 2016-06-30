@@ -1,15 +1,22 @@
-#ifndef EPOLL_LOOP_H
-#define EPOLL_LOOP_H
+#ifndef EPOLL_EVENT_H
+#define EPOLL_EVENT_H
 
 #include <sys/epoll.h>
+#include <stdlib.h>
+
 #include "event_loop.h"
+#include "socket_utils.h"
+
+typedef struct epoll_event aeEvent;
+
 
 #define MAX_EVENTS 1024
 
 class EpollEventLoop:public EventLoop{
 public:
-  EpollEventLoop(int size):EventLoop(size),logger("epoll"){
 
+  EpollEventLoop(int size):EventLoop(size),logger("epoll"){
+    _events = (aeEvent*)malloc(sizeof(aeEvent)*MAX_EVENTS);
   }
   int wait_for_event(){
     logger.info("wait for epoll event");
@@ -32,7 +39,6 @@ public:
   int add_event_intern(int fd,int mask){
     int ret = -1;
     struct epoll_event ee;
-
     ee.events |=EPOLLIN;
     ee.events |=EPOLLOUT;
 
@@ -52,7 +58,20 @@ public:
     if(ret == -1){
       logger.error("del epoll event failed");
       return -1;
+
     }
+    return 0;
+  }
+
+  int del_event(int fd,int mask){
+    aeEvent ee;
+
+    int ret =epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd,&ee);
+    if(ret == -1){
+      logger.error("delete epoll event failed");
+      exit(-1);
+    }
+    return 0;
   }
 private:
   Logger logger;

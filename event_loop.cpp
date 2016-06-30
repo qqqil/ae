@@ -33,10 +33,10 @@ int aeEventLoop::del_event(int fd,int mask){
   int ret = del_event_intern(fd,mask);
 }
 int aeEventLoop::wait_for_event(){
-
+  logger.info("wait for event");
   return 0;
 }
 
 int aeEventLoop::create_event_instance(){
-
+  logger.info("create event instance");
 }

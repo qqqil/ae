@@ -78,6 +78,10 @@ make_socket_non_blocking (int sfd)
 
   return 0;
 }
+
+/**
+ accept client connection ,and add client read/write event to event loop
+**/
 static int accept_handler(EventLoop &event_loop,int fd,void *clientData,int mask){
     struct sockaddr in_addr;
     socklen_t in_len;
@@ -93,7 +97,8 @@ static int accept_handler(EventLoop &event_loop,int fd,void *clientData,int mask
       perror("make socket non blocking error");
       return -1;
     }
-    return client;
+    ret = event_loop.add_event(client,AE_READ|AE_WRITE,fire_read,file_write);
+    return ret;
 }
 
 static int file_read(EventLoop &event_loop,int fd,void *clientData,int mask){
