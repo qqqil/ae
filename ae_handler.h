@@ -10,51 +10,30 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-
+static int file_read(EventLoop &event_loop,int fd,void *clientData,int mask);
+static int file_write(EventLoop &event_loop,int fd,void *clientData,int mask);
 static int
-create_and_bind (int *_port)
+create_and_bind (int _port)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
-  int s, sfd;
+  int s;
 
-  memset (&hints, 0, sizeof (struct addrinfo));
-  hints.ai_family = AF_UNSPEC;     /* Return IPv4 and IPv6 choices */
-  hints.ai_socktype = SOCK_STREAM; /* We want a TCP socket */
-  hints.ai_flags = AI_PASSIVE;     /* All interfaces */
-  char port;
-  s = getaddrinfo (NULL, &port, &hints, &result);
-  if (s != 0)
-    {
-      fprintf (stderr, "getaddrinfo: %s\n", gai_strerror (s));
-      return -1;
-    }
-
-  for (rp = result; rp != NULL; rp = rp->ai_next)
-    {
-      sfd = socket (rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-      if (sfd == -1)
-        continue;
-
-      s = bind (sfd, rp->ai_addr, rp->ai_addrlen);
-      if (s == 0)
-        {
-          /* We managed to bind successfully! */
-          break;
-        }
-
-      close (sfd);
-    }
-
-  if (rp == NULL)
-    {
-      fprintf (stderr, "Could not bind\n");
-      return -1;
-    }
-
-  freeaddrinfo (result);
-
-  return sfd;
+  s = socket(AF_INET,SOCK_STREAM,0);
+  if(s < 0){
+    perror("create server socket failed");
+    exit(-1);
+  }
+  struct sockaddr_in serv_addr;
+  serv_addr.sin_family=AF_INET;
+  serv_addr.sin_port=htons(_port);
+  serv_addr.sin_addr.s_addr = INADDR_ANY;
+  if(bind(s,(struct sockaddr*)&serv_addr,sizeof(serv_addr)) ==-1){
+    perror("bind failed");
+    exit(-1);
+  }
+  listen(s,64);
+  return s;
 }
 static int
 make_socket_non_blocking (int sfd)
@@ -97,14 +76,19 @@ static int accept_handler(EventLoop &event_loop,int fd,void *clientData,int mask
       perror("make socket non blocking error");
       return -1;
     }
-    ret = event_loop.add_event(client,AE_READ|AE_WRITE,fire_read,file_write);
+    ret = event_loop.add_event(client,AE_READ|AE_WRITE,file_read,file_write);
     return ret;
 }
 
 static int file_read(EventLoop &event_loop,int fd,void *clientData,int mask){
-
+    char buf[4096];
+    bzero(buf,sizeof(buf));
+    int num = read(fd,buf,4096);
+    if(num >0){
+        std::cout<<"read from fd:"<<fd <<":"<<buf<<std::endl;
+    }
 }
 static int file_write(EventLoop &event_loop,int fd,void *clientData,int mask){
-
+    std::cout<<"write data for fd:"<<fd<<std::endl;
 }
 #endif

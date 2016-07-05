@@ -3,6 +3,8 @@
 #define LOGGER_H
 
 #include <string>
+#include <cstring>
+#include <errno.h>
 
 #include "io_file.h"
 
@@ -25,6 +27,7 @@ class Logger {
         logger(1,msg);
      }
      void error(const std::string &msg){
+         logger(2,strerror(errno));
         logger(2,msg);
      }
 
