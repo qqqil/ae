@@ -27,7 +27,7 @@ public:
      *
      */
     int wait_for_event() {
-        logger.info("wait for epoll event");
+//        logger.info("wait for epoll event");
         int ret;
         ret = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
         for (int i = 0; i < ret; i++) {

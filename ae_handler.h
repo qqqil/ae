@@ -12,6 +12,8 @@
 
 static int file_read(EventLoop &event_loop,int fd,void *clientData,int mask);
 static int file_write(EventLoop &event_loop,int fd,void *clientData,int mask);
+static int set_sock_reuseaddr(int fd);
+
 static int
 create_and_bind (int _port)
 {
@@ -28,6 +30,7 @@ create_and_bind (int _port)
   serv_addr.sin_family=AF_INET;
   serv_addr.sin_port=htons(_port);
   serv_addr.sin_addr.s_addr = INADDR_ANY;
+    set_sock_reuseaddr(s);
   if(bind(s,(struct sockaddr*)&serv_addr,sizeof(serv_addr)) ==-1){
     perror("bind failed");
     exit(-1);
@@ -79,16 +82,37 @@ static int accept_handler(EventLoop &event_loop,int fd,void *clientData,int mask
     ret = event_loop.add_event(client,AE_READ|AE_WRITE,file_read,file_write);
     return ret;
 }
-
+static int set_sock_reuseaddr(int fd){
+    int enable = 1;
+    int ret= setsockopt(fd,SOL_SOCKET,SO_REUSEADDR,&enable,sizeof(int));
+    if(ret == -1){
+        perror("set sock reuse address failed!");
+        return -1;
+    }
+    return 0;
+}
+/**
+ *  
+ */
 static int file_read(EventLoop &event_loop,int fd,void *clientData,int mask){
-    char buf[4096];
-    bzero(buf,sizeof(buf));
-    int num = read(fd,buf,4096);
+    Buffer *buffer_ptr=(Buffer *)clientData;
+    int num = buffer_ptr->read(fd);
+    char buf[8096];
+    num = buffer_ptr->get_data(buf,8096);
     if(num >0){
         std::cout<<"read from fd:"<<fd <<":"<<buf<<std::endl;
+    }else{
+        return 0;
     }
+    buffer_ptr->put_data(buf,num);
 }
+/**
+ *
+ */
 static int file_write(EventLoop &event_loop,int fd,void *clientData,int mask){
-    std::cout<<"write data for fd:"<<fd<<std::endl;
+//    std::cout<<"write data for fd:"<<fd<<std::endl;
+    Buffer *buffer_ptr = (Buffer *)clientData;
+    int ret = buffer_ptr->write(fd);
+    return ret;
 }
 #endif

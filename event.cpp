@@ -30,6 +30,8 @@ int main(){
       logger.error("make server fd non blocking failed");
       exit(-1);
     }
+
+
     std::cout<<"port :"<<port<<std::endl;
     std::cout<<"server fd:"<<server_fd<<std::endl;
     // aeFileEvent *fe = evt_loop.file_events+server_fd;
