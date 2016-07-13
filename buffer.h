@@ -45,7 +45,9 @@ public:
         }
         return num;
     }
-
+    int update_read_start(int num){
+        start_ += num;
+    }
     int get_data(char *data, int size) {
         int num = 0;
         if(end_ -start_ > size){
@@ -56,11 +58,11 @@ public:
         for(int i=0;i<num;i++){
             *(data+i) = buf[start_+i];
         }
-        start_ +=num;
+//        start_ +=num;
         return num;
     }
 
-    int put_data(char *data, int size) {
+    int put_data(const char *data, int size) {
         for(int i=0;i<size;i++){
             w_buf[w_start_+i] = *(data+i);
         }

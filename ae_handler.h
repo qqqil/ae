@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <regex>
 
 static int file_read(EventLoop &event_loop,int fd,void *clientData,int mask);
 static int file_write(EventLoop &event_loop,int fd,void *clientData,int mask);
@@ -91,8 +92,15 @@ static int set_sock_reuseaddr(int fd){
     }
     return 0;
 }
+const char* http_end_regex="\r\n\r\n";
+std::regex http_regex(http_end_regex);
+bool check_is_http_end(const char* buf){
+    std::string str(buf);
+    return str.find("\n\n");
+//    return std::regex_match(buf,http_regex);
+}
 /**
- *  
+ *
  */
 static int file_read(EventLoop &event_loop,int fd,void *clientData,int mask){
     Buffer *buffer_ptr=(Buffer *)clientData;
@@ -104,7 +112,21 @@ static int file_read(EventLoop &event_loop,int fd,void *clientData,int mask){
     }else{
         return 0;
     }
-    buffer_ptr->put_data(buf,num);
+
+    if(check_is_http_end(buf)){
+        //read completed http content
+        std::string response;
+        std::string body="<html><head></head><body>helloworld!</body></html>";
+        int len=body.length();
+        response+="HTTP-Version:HTTP/1.1 200 OK\n";
+        response+="Content-Type:text/html";
+        response+= "Content-Length:"+std::to_string(len)+"\n";
+        response+="\n\n";
+        response+="<html><head></head><body>helloworld!</body></html>";
+        buffer_ptr->put_data(response.c_str(),response.length());
+        buffer_ptr->update_read_start(num);
+    }
+
 }
 /**
  *
